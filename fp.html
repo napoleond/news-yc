@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf8"/>
+    <title>Penalty-free HN</title>
+    <style>
+      li.penalty a { color:red; }
+    </style>
+  </head>
+  <body>
+    <ul>
+      {% for item in items %}
+      <li{% if item.penalty < 0.8 %} class="penalty" {% endif %}>
+        <a href="{{ item.link }}">{{ item.title }}</a> | <a href="{{ item.comments }}">{{ item.num_comments }} Comments</a> | Penalty: ~{{ '%0.2f' % item.penalty|float }}
+      </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
