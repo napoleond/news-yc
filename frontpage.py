@@ -1,4 +1,7 @@
 import os
+import json
+import logging
+from urllib import quote
 from xml.dom.minidom import parseString
 from datetime import datetime
 
@@ -19,6 +22,24 @@ def pluck(xml,tag):
         return xml.getElementsByTagName(tag)[0].firstChild.data
     except:
         return None
+
+def get_summary(url,item_id):
+    summary = memcache.get('summary:'+str(item_id))
+    if summary is None:
+        try:
+            resp = fetch(url='https://tldr.p.mashape.com/summary?url='+quote(url),headers={"X-Mashape-Authorization": "i4fhqn7lk07QLkk3kJ8ALzVjgqvQU5TW"})
+            summary=resp.content
+        except:
+            pass
+        #resp = json.loads(resp.content)
+        '''
+        if 'error' in resp.keys():
+          summary = "None"
+        else:
+          summary = resp['data']['summary']
+        '''
+        if summary and not memcache.add('summary:'+str(item_id),summary,0):
+            logging.error('Memcache set failed')
 
 class MainPage(webapp2.RequestHandler):
 
@@ -43,16 +64,19 @@ class MainPage(webapp2.RequestHandler):
                     "id": pluck(item_xml,"hnsearch_id"),
                     "username": pluck(item_xml,"username"),
                     "create_ts": pluck(item_xml,"create_ts"),
-                    "num_comments": int(pluck(item_xml,"num_comments")),
-                    "points": float(pluck(item_xml,"points"))
+                    "num_comments": pluck(item_xml,"num_comments"),
+                    "points": pluck(item_xml,"points")
                 }
                 if item['create_ts'] is not None:
                     #look here for explanation of ranking:
                     #http://www.righto.com/2013/11/how-hacker-news-ranking-really-works.html
+                    item['num_comments'] = int(item['num_comments'])
+                    item['points'] = float(item['points'])
                     delta = datetime.utcnow() - datetime.strptime(item['create_ts'],"%Y-%m-%dT%H:%M:%SZ")
                     hours_ago = delta.total_seconds() / 3600
                     item['raw_score'] = (item['points']-1.0) ** 0.8 / (float(hours_ago)+2.0) ** 1.8
-                    item[''] = item['num_comments']) >= 40 and item['num_comments'] > item['points']
+                    item['controversy'] = item['num_comments'] >= 40 and item['num_comments'] > item['points']
+                    #item['summary'] = get_summary(item['link'],item['id'])
 
                     if i < 3:
                         fp_items.append(item)
