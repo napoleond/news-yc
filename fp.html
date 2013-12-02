@@ -8,9 +8,11 @@
     </style>
   </head>
   <body>
+    <p><small>This whole thing was inspired by <a href="http://www.righto.com/2013/11/how-hacker-news-ranking-really-works.html">Ken Shirriff's blog post about submission penalties on HN</a>. Summaries powered by Plexi.</small></p>
     <ul>
       {% for item in items %}
-      <li{% if item.penalty < 0.8 %} class="penalty" {% endif %}>
+      <li{% if item.penalty < 0.85 %} class="penalty" {% endif %}>
+        {% if item.controversy %}CONTROVERSY: {% endif %}
         <a href="{{ item.link }}">{{ item.title }}</a> | <a href="{{ item.comments }}">{{ item.num_comments }} Comments</a> | Penalty: ~{{ '%0.2f' % item.penalty|float }}
       </li>
       {% endfor %}

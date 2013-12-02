@@ -43,15 +43,16 @@ class MainPage(webapp2.RequestHandler):
                     "id": pluck(item_xml,"hnsearch_id"),
                     "username": pluck(item_xml,"username"),
                     "create_ts": pluck(item_xml,"create_ts"),
-                    "num_comments": pluck(item_xml,"num_comments"),
-                    "points": pluck(item_xml,"points")
+                    "num_comments": int(pluck(item_xml,"num_comments")),
+                    "points": float(pluck(item_xml,"points"))
                 }
                 if item['create_ts'] is not None:
                     #look here for explanation of ranking:
                     #http://www.righto.com/2013/11/how-hacker-news-ranking-really-works.html
                     delta = datetime.utcnow() - datetime.strptime(item['create_ts'],"%Y-%m-%dT%H:%M:%SZ")
                     hours_ago = delta.total_seconds() / 3600
-                    item['raw_score'] = (float(item['points'])-1.0) ** 0.8 / (float(hours_ago)+2.0) ** 1.8
+                    item['raw_score'] = (item['points']-1.0) ** 0.8 / (float(hours_ago)+2.0) ** 1.8
+                    item[''] = item['num_comments']) >= 40 and item['num_comments'] > item['points']
 
                     if i < 3:
                         fp_items.append(item)
